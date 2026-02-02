@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -29,9 +31,7 @@ Route::get('/about-w', function () {
 Route::get('/report', function () {
     return view('report');
 });
-Route::get('/login', function () {
-    return view('login');
-});
+
 Route::get('/learnmore', function () {
     return view('learnmore');
 });
@@ -40,19 +40,29 @@ Route::get('/profil', function () {
 });
 
 
+// login
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+
+// logout
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+
 //Admin
-Route::get('/login-ad', function () {
-    return view('login-ad');
-});
-Route::get('/admin', function () {
-    return view('admin');
-});
-Route::get('/report-ad', function () {
-    return view('report-ad');
-});
-Route::get('/riwayat-ad', function () {
-    return view('riwayat-ad');
-});
-Route::get('/user-ad', function () {
-    return view('user-ad');
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin', function () {
+        return view('admin.admin');
+    })->name('admin.admin');
+
+    Route::get('/admin.report-ad', function () {
+        return view('admin.report-ad');
+    });
+
+    Route::get('/admin.riwayat-ad', function () {
+        return view('admin.riwayat-ad');
+    });
+
+    Route::get('/admin.user-ad', function () {
+        return view('admin.user-ad');
+    });
 });

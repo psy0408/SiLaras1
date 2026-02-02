@@ -345,6 +345,78 @@
         .overlay.active {
             display: block;
         }
+
+        /* Modal background */
+.modal {
+    display: none; 
+    position: fixed;
+    z-index: 9999;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* Modal box */
+.modal-content {
+    background: #fff;
+    padding: 24px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    animation: scaleIn 0.2s ease;
+}
+
+.modal-content h3 {
+    margin-bottom: 10px;
+}
+
+.modal-content p {
+    color: #555;
+    margin-bottom: 20px;
+}
+
+/* Buttons */
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.btn-cancel {
+    padding: 10px 16px;
+    background: #e5e7eb;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-logout {
+    padding: 10px 16px;
+    background: #dc2626;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-logout:hover {
+    background: #b91c1c;
+}
+
+/* Animation */
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
     </style>
 </head>
 <body>
@@ -360,13 +432,35 @@
         
         <nav class="sidebar-menu">
             <div class="menu-item active">DASHBOARD</div>
-            <div class="menu-item" onclick="window.location.href='/report-ad'">REPORT</div>
-            <div class="menu-item" onclick="window.location.href='/riwayat-ad'">RIWAYAT</div>
-            <div class="menu-item" onclick="window.location.href='/user-ad'">USER</div>
+            <div class="menu-item" onclick="window.location.href='/admin.report-ad'">REPORT</div>
+            <div class="menu-item" onclick="window.location.href='/admin.riwayat-ad'">RIWAYAT</div>
+            <div class="menu-item" onclick="window.location.href='/admin.user-ad'">USER</div>
         </nav>
 
         <div class="sidebar-logout">
-            <button class="logout-btn" onclick="logout()">LOGOUT</button>
+        <form id="logoutForm" action="{{ route('logout') }}" method="POST">
+           @csrf
+        <button type="button" class="logout-btn" onclick="openLogoutModal()">
+           Logout
+        </button>
+        </div>
+
+        <!-- Modal Logout -->
+        <div id="logoutModal" class="modal">
+        <div class="modal-content">
+        <h3>Konfirmasi Logout</h3>
+        <p>Apakah Anda yakin ingin logout?</p>
+
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="closeLogoutModal()">
+        Batal
+    </button>
+
+    <button type="button" class="btn-logout" onclick="confirmLogout()">
+        Logout
+    </button>
+        </div>
+        </div>
         </div>
     </aside>
 
@@ -481,13 +575,19 @@
             overlay.classList.toggle('active');
         }
 
-        // Logout function
-        function logout() {
-            if (confirm('Apakah Anda yakin ingin logout?')) {
-                alert('Logout berhasil!');
-                window.location.href = '/login-ad';
-            }
-        }
+        // logout function
+       function openLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'flex';
+}
+
+function closeLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'none';
+}
+
+function confirmLogout() {
+    document.getElementById('logoutForm').submit();
+}
+
 
         // Search functionality
         document.getElementById('searchInput').addEventListener('keyup', function() {
