@@ -1,9 +1,16 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Dashboard Admin - SiLaras</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -11,18 +18,44 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary: #1e1b4b;
+            --primary-dark: #0f0b3d;
+            --primary-light: #2e2a6b;
+            --secondary: #4f46e5;
+            --secondary-light: #6366f1;
+            --accent: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --gray-50: #f9fafb;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-colored: 0 4px 20px rgba(79, 70, 229, 0.15);
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f6f7ff 0%, #edf0ff 100%);
             min-height: 100vh;
             display: flex;
+            color: var(--gray-800);
         }
 
         /* Sidebar */
         .sidebar {
-            width: 250px;
-            background: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            width: 280px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 120%);
+            box-shadow: 4px 0 25px rgba(0, 0, 0, 0.15);
             display: flex;
             flex-direction: column;
             position: fixed;
@@ -30,164 +63,296 @@
             left: 0;
             top: 0;
             z-index: 100;
+            transition: all 0.3s;
         }
 
         .sidebar-logo {
             padding: 1.5rem;
-            background: #e8e8e8;
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #1a1f71;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
             text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .sidebar-logo::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg,
+                    transparent 30%,
+                    rgba(255, 255, 255, 0.1) 50%,
+                    transparent 70%);
+            animation: shine 3s infinite;
+        }
+
+        .sidebar-logo img {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+            z-index: 1;
+            padding: 6px 12px;
+            border-radius: 10px;
+        }
+
+        @keyframes shine {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
         }
 
         .sidebar-menu {
             flex: 1;
-            padding: 2rem 0;
+            padding: 1.5rem 0;
         }
 
         .menu-item {
-            padding: 1rem 2rem;
-            color: #333;
+            padding: 0.9rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
             font-weight: 600;
-            font-size: 1.05rem;
+            font-size: 0.95rem;
             cursor: pointer;
             transition: all 0.3s;
             border-left: 4px solid transparent;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 0.3rem 0;
+        }
+
+        .menu-item i {
+            width: 24px;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.6);
         }
 
         .menu-item:hover {
-            background: #f8f9fa;
-            border-left-color: #5b4cdb;
+            background: rgba(255, 255, 255, 0.15);
+            border-left-color: white;
+            color: white;
         }
 
         .menu-item.active {
-            background: #f0f0f0;
-            color: #1a1f71;
-            border-left-color: #1a1f71;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-left-color: white;
         }
 
         .sidebar-logout {
             padding: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
         }
 
         .logout-btn {
             width: 100%;
-            background: #a41e1e;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), #dc2626);
             color: white;
-            padding: 1rem;
+            padding: 0.9rem;
             border: none;
-            border-radius: 8px;
-            font-size: 1.05rem;
-            font-weight: bold;
+            border-radius: 12px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .logout-btn:hover {
-            background: #8b1a1a;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(164, 30, 30, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
         /* Main Content */
         .main-content {
-            margin-left: 250px;
+            margin-left: 280px;
             flex: 1;
-            padding: 2rem;
-            width: calc(100% - 250px);
+            padding: 1.5rem;
+            width: calc(100% - 280px);
         }
 
         /* Header */
         .header {
             background: white;
             padding: 1.5rem 2rem;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 2rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(79, 70, 229, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .header h1 {
-            font-size: 2rem;
-            color: #1a1f71;
-            font-weight: bold;
+            font-family: 'Sora', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        /* Statistics Grid */
+        .date-badge {
+            background: linear-gradient(135deg, #f0f3ff 0%, #e8ecff 100%);
+            padding: 0.6rem 1.2rem;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .stat-card {
-            background: #e8e8e8;
-            border-radius: 12px;
-            padding: 1.5rem;
-            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 1.2rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+            border: 1px solid rgba(79, 70, 229, 0.1);
         }
 
-        .stat-label {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #333;
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
             margin-bottom: 0.8rem;
         }
 
-        .stat-value {
-            font-size: 2.2rem;
-            font-weight: bold;
-            color: #1a1f71;
+        .stat-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #f0f3ff 0%, #e8ecff 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--secondary);
         }
 
-        /* Content Grid */
-        .content-grid {
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-family: 'Sora', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+
+        /* Layout: 2 Kolom (Laporan Terbaru + Info Panel) */
+        .dashboard-two-columns {
             display: grid;
             grid-template-columns: 2fr 1fr;
-            gap: 2rem;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
         }
 
         /* Reports Section */
         .reports-section {
             background: white;
-            border-radius: 15px;
-            padding: 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(79, 70, 229, 0.1);
+            display: flex;
+            flex-direction: column;
         }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            gap: 0.8rem;
         }
 
         .section-title {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #1a1f71;
+            font-family: 'Sora', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .search-box {
             flex: 1;
-            max-width: 300px;
-            margin-left: 2rem;
+            max-width: 260px;
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            font-size: 0.8rem;
         }
 
         .search-box input {
             width: 100%;
-            padding: 0.7rem 1rem;
-            border: 1.5px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 0.95rem;
+            padding: 0.6rem 0.8rem 0.6rem 2.2rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            font-size: 0.85rem;
             transition: all 0.3s;
         }
 
         .search-box input:focus {
             outline: none;
-            border-color: #5b4cdb;
-            box-shadow: 0 0 0 3px rgba(91, 76, 219, 0.1);
+            border-color: var(--secondary);
+        }
+
+        .table-container {
+            overflow-y: visible;
+            border-radius: 12px;
+            max-height: 380px;
+        }
+
+        .table-container::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 10px;
         }
 
         .reports-table {
@@ -195,91 +360,411 @@
             border-collapse: collapse;
         }
 
-        .reports-table thead {
-            background: #f8f9fa;
-        }
-
         .reports-table th {
-            padding: 1rem;
+            background: linear-gradient(135deg, #f0f3ff 0%, #e8ecff 100%);
+            padding: 0.8rem 1rem;
             text-align: left;
-            font-weight: 600;
-            color: #333;
-            border-bottom: 2px solid #e0e0e0;
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            position: sticky;
+            top: 0;
         }
 
         .reports-table td {
-            padding: 1rem;
-            border-bottom: 1px solid #f0f0f0;
-            color: #555;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--gray-200);
+            color: var(--gray-600);
+            font-size: 0.85rem;
+        }
+
+        .reports-table tbody tr {
+            cursor: pointer;
+            transition: background 0.2s;
         }
 
         .reports-table tbody tr:hover {
-            background: #f8f9fa;
+            background: var(--gray-50);
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .report-id-badge {
+            background: linear-gradient(135deg, #f0f3ff 0%, #e8ecff 100%);
+            color: var(--secondary);
+            padding: 0.2rem 0.6rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.25rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
         }
 
         /* Info Panel */
         .info-panel {
             display: flex;
             flex-direction: column;
-            gap: 2rem;
+            gap: 1rem;
         }
 
         .user-count-card {
-            background: white;
-            border-radius: 15px;
-            padding: 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            text-align: center;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 20px;
+            padding: 1.5rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
         }
 
-        .user-count-label {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #333;
+        .user-count-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
             margin-bottom: 1rem;
         }
 
+        .user-count-header i {
+            font-size: 1.8rem;
+            opacity: 0.9;
+        }
+
+        .user-count-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         .user-count-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #1a1f71;
+            font-family: 'Sora', sans-serif;
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1;
         }
 
         .logo-card {
             background: white;
-            border-radius: 15px;
-            padding: 3rem 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-radius: 20px;
+            padding: 1.8rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .logo img{
+         height: 60px;
+            width: auto;
+            object-fit: contain;
+            z-index: 1;
+            padding: 6px 12px;
+            border-radius: 10px;
+        }
+
+        .quick-actions {
+            background: white;
+            border-radius: 20px;
+            padding: 1.3rem;
+            box-shadow: var(--shadow);
+        }
+
+        .quick-actions h3 {
+            font-size: 1rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .actions-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #f0f3ff 0%, #e8ecff 100%);
+            border: none;
+            padding: 0.9rem 1rem;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .action-btn i:first-child {
+            font-size: 1.1rem;
+            color: var(--secondary);
+            width: 24px;
+        }
+
+        .action-btn span {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary);
+            flex: 1;
+            text-align: left;
+        }
+
+        .action-btn .arrow {
+            color: var(--gray-400);
+            font-size: 0.75rem;
+        }
+
+        /* Monthly Chart */
+        .monthly-chart-section {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(79, 70, 229, 0.1);
+            margin-top: 0;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .chart-title {
+            font-family: 'Sora', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .chart-select {
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            border: 1px solid var(--gray-200);
+            background: white;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 320px;
+            background: linear-gradient(135deg, #f9fafb 0%, #f0f3ff 100%);
+            border-radius: 20px;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .chart-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            padding-top: 1rem;
+            border-top: 2px dashed var(--gray-200);
+        }
+
+        .chart-stat-item {
+            text-align: center;
+            background: var(--gray-50);
+            padding: 0.7rem;
+            border-radius: 14px;
+        }
+
+        .chart-stat-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            margin-bottom: 0.3rem;
+        }
+
+        .chart-stat-value {
+            font-family: 'Sora', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray-500);
+        }
+
+        .download-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            border: none;
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 24px;
+            max-width: 360px;
             text-align: center;
         }
 
-        .logo-card .logo-text {
-            font-size: 3rem;
-            font-weight: bold;
-            color: #1a1f71;
+        .modal-icon {
+            width: 60px;
+            height: 60px;
+            background: #fee2e2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.8rem;
+            color: var(--danger);
         }
 
-        /* Mobile Menu Toggle */
+        .modal-actions {
+            display: flex;
+            gap: 0.8rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        .btn-cancel,
+        .btn-logout {
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background: var(--gray-100);
+        }
+
+        .btn-logout {
+            background: #dc2626;
+            color: white;
+        }
+
+        /* Mobile */
         .mobile-menu-toggle {
             display: none;
             position: fixed;
             top: 1rem;
             left: 1rem;
             z-index: 200;
-            background: #1a1f71;
+            background: var(--secondary);
             color: white;
             border: none;
-            padding: 0.8rem 1rem;
-            border-radius: 8px;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 1.2rem;
         }
 
-        /* Responsive */
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 90;
+        }
+
         @media (max-width: 968px) {
             .sidebar {
                 transform: translateX(-100%);
-                transition: transform 0.3s;
+                width: 260px;
             }
 
             .sidebar.active {
@@ -289,29 +774,30 @@
             .main-content {
                 margin-left: 0;
                 width: 100%;
+                padding: 1rem;
             }
 
             .mobile-menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .overlay.active {
                 display: block;
             }
 
-            .content-grid {
+            .dashboard-two-columns {
                 grid-template-columns: 1fr;
+                gap: 1rem;
             }
 
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
 
-            .section-header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .search-box {
-                margin-left: 0;
-                margin-top: 1rem;
-                max-width: 100%;
+            .chart-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
 
@@ -320,317 +806,386 @@
                 grid-template-columns: 1fr;
             }
 
-            .reports-table {
-                font-size: 0.9rem;
+            .chart-stats-grid {
+                grid-template-columns: 1fr;
             }
 
-            .reports-table th,
-            .reports-table td {
-                padding: 0.7rem;
+            .header h1 {
+                font-size: 1.3rem;
             }
         }
-
-        /* Overlay for mobile menu */
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 90;
-        }
-
-        .overlay.active {
-            display: block;
-        }
-
-        /* Modal background */
-.modal {
-    display: none; 
-    position: fixed;
-    z-index: 9999;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    align-items: center;
-    justify-content: center;
-}
-
-
-/* Modal box */
-.modal-content {
-    background: #fff;
-    padding: 24px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
-    animation: scaleIn 0.2s ease;
-}
-
-.modal-content h3 {
-    margin-bottom: 10px;
-}
-
-.modal-content p {
-    color: #555;
-    margin-bottom: 20px;
-}
-
-/* Buttons */
-.modal-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-}
-
-.btn-cancel {
-    padding: 10px 16px;
-    background: #e5e7eb;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.btn-logout {
-    padding: 10px 16px;
-    background: #dc2626;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.btn-logout:hover {
-    background: #b91c1c;
-}
-
-/* Animation */
-@keyframes scaleIn {
-    from {
-        transform: scale(0.9);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
     </style>
 </head>
-<body>
-    <!-- Mobile Menu Toggle -->
-    <button class="mobile-menu-toggle" onclick="toggleSidebar()">☰</button>
 
-    <!-- Overlay -->
+<body>
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-logo">SiLaras!</div>
-        
+        <div class="sidebar-logo">
+            <img src="{{ asset('images/logo-silaras-putih.png') }}" alt="SiLaras Logo">
+        </div>
         <nav class="sidebar-menu">
-            <div class="menu-item active">DASHBOARD</div>
-            <div class="menu-item" onclick="window.location.href='/admin.report-ad'">REPORT</div>
-            <div class="menu-item" onclick="window.location.href='/admin.riwayat-ad'">RIWAYAT</div>
-            <div class="menu-item" onclick="window.location.href='/admin.user-ad'">USER</div>
+            <a href="/admin" class="menu-item active"><i class="fas fa-chart-pie"></i><span>Dasbor</span></a>
+            <a href="/admin/report-ad" class="menu-item"><i class="fas fa-file-alt"></i><span>Laporan</span></a>
+            <a href="/admin/riwayat-ad" class="menu-item"><i class="fas fa-history"></i><span>Riwayat</span></a>
+            <a href="/admin/user-ad" class="menu-item"><i class="fas fa-users"></i><span>Pengguna</span></a>
         </nav>
-
         <div class="sidebar-logout">
-        <form id="logoutForm" action="{{ route('logout') }}" method="POST">
-           @csrf
-        <button type="button" class="logout-btn" onclick="openLogoutModal()">
-           Logout
-        </button>
-        </div>
-
-        <!-- Modal Logout -->
-        <div id="logoutModal" class="modal">
-        <div class="modal-content">
-        <h3>Konfirmasi Logout</h3>
-        <p>Apakah Anda yakin ingin logout?</p>
-
-        <div class="modal-actions">
-            <button type="button" class="btn-cancel" onclick="closeLogoutModal()">
-        Batal
-    </button>
-
-    <button type="button" class="btn-logout" onclick="confirmLogout()">
-        Logout
-    </button>
-        </div>
-        </div>
+            <form id="logoutForm" action="{{ route('logout') }}" method="POST">@csrf
+                <button type="button" class="logout-btn" onclick="openLogoutModal()"><i
+                        class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+            </form>
         </div>
     </aside>
 
-    <!-- Main Content -->
+    <!-- Modal Logout -->
+    <div id="logoutModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <h3>Konfirmasi Logout</h3>
+            <p>Apakah Anda yakin ingin keluar?</p>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeLogoutModal()">Batal</button>
+                <button class="btn-logout" onclick="confirmLogout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
     <main class="main-content">
         <!-- Header -->
         <div class="header">
-            <h1>DASHBOARD</h1>
+            <div class="header-content">
+                <h1>Dasbor Admin</h1>
+                <div class="date-badge"><i class="far fa-calendar-alt"></i><span>{{ date('d F Y') }}</span></div>
+            </div>
         </div>
 
-        <!-- Statistics -->
+        <!-- Statistik Cards -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-label">Total Laporan</div>
-                <div class="stat-value">42</div>
+                <div class="stat-header">
+                    <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="stat-label">Total Laporan</div>
+                </div>
+                <div class="stat-value">{{ $totalReports }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Diproses</div>
-                <div class="stat-value">42</div>
+                <div class="stat-header">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat-value">{{ $pendingReports }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Disetujui</div>
-                <div class="stat-value">42</div>
+                <div class="stat-header">
+                    <div class="stat-icon"><i class="fas fa-sync-alt"></i></div>
+                    <div class="stat-label">Diproses</div>
+                </div>
+                <div class="stat-value">{{ $diprosesReports }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Ditolak</div>
-                <div class="stat-value">42</div>
+                <div class="stat-header">
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-label">Selesai</div>
+                </div>
+                <div class="stat-value">{{ $selesaiReports }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+                    <div class="stat-label">Ditolak</div>
+                </div>
+                <div class="stat-value">{{ $ditolakReports }}</div>
             </div>
         </div>
 
-        <!-- Content Grid -->
-        <div class="content-grid">
-            <!-- Reports Section -->
+        <!-- Laporan Terbaru -->
+        <div class="dashboard-two-columns">
             <div class="reports-section">
                 <div class="section-header">
-                    <h2 class="section-title">Laporan Terbaru :</h2>
-                    <div class="search-box">
-                        <input type="text" placeholder="Search...." id="searchInput">
-                    </div>
+                    <div class="section-title"><i class="fas fa-history"></i><span>Laporan Terbaru</span></div>
+                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput"
+                            placeholder="Cari laporan..."></div>
                 </div>
-
-                <table class="reports-table">
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Laporan</th>
-                            <th>Deskripsi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reportsTableBody">
-                        <tr>
-                            <td>User 1</td>
-                            <td>Laporan #001</td>
-                            <td>Kerusakan AC</td>
-                        </tr>
-                        <tr>
-                            <td>User 1</td>
-                            <td>Laporan #002</td>
-                            <td>Kerusakan AC</td>
-                        </tr>
-                        <tr>
-                            <td>User 1</td>
-                            <td>Laporan #003</td>
-                            <td>Kerusakan AC</td>
-                        </tr>
-                        <tr>
-                            <td>User 2</td>
-                            <td>Laporan #004</td>
-                            <td>Toilet Kotor</td>
-                        </tr>
-                        <tr>
-                            <td>User 3</td>
-                            <td>Laporan #005</td>
-                            <td>Lampu Mati</td>
-                        </tr>
-                        <tr>
-                            <td>User 1</td>
-                            <td>Laporan #006</td>
-                            <td>Kerusakan Meja</td>
-                        </tr>
-                        <tr>
-                            <td>User 4</td>
-                            <td>Laporan #007</td>
-                            <td>Kerusakan Kursi</td>
-                        </tr>
-                    </tbody>
-                </table>
+                @if ($recentReports->count() > 0)
+                    <div class="table-container">
+                        <table class="reports-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>ID Laporan</th>
+                                    <th>Jenis</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportsTableBody">
+                                @foreach ($recentReports as $report)
+                                    <tr onclick="viewReportDetail({{ $report->id }})">
+                                        <td>
+                                            <div class="user-badge">
+                                                <div class="user-avatar">
+                                                    {{ strtoupper(substr($report->user->name, 0, 1)) }}</div>
+                                                <span>{{ $report->user->name }}</span>
+                                            </div>
+                                        </td>
+                                        <td><span
+                                                class="report-id-badge">#{{ str_pad($report->id, 3, '0', STR_PAD_LEFT) }}</span>
+                                        </td>
+                                        <td><i
+                                                class="fas fa-{{ $report->kategori === 'sarana' ? 'chair' : 'school' }}"></i>
+                                            {{ $report->jenis_sarana }}</td>
+                                        <td>@php
+                                            $statusMap = [
+                                                'Pending' => 'warning',
+                                                'Diproses' => 'info',
+                                                'Selesai' => 'success',
+                                                'Ditolak' => 'danger',
+                                            ];
+                                            $iconMap = [
+                                                'Pending' => 'clock',
+                                                'Diproses' => 'sync-alt',
+                                                'Selesai' => 'check-circle',
+                                                'Ditolak' => 'times-circle',
+                                            ];
+                                        @endphp
+                                            <span class="badge badge-{{ $statusMap[$report->status] }}"><i
+                                                    class="fas fa-{{ $iconMap[$report->status] }}"></i>
+                                                {{ $report->status }}</span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="empty-state"><i class="fas fa-inbox fa-2x"></i>
+                        <p>Belum ada laporan</p>
+                    </div>
+                @endif
             </div>
 
             <!-- Info Panel -->
             <div class="info-panel">
-                <!-- Total User Card -->
                 <div class="user-count-card">
-                    <div class="user-count-label">Total User</div>
-                    <div class="user-count-value">42</div>
+                    <div class="user-count-header"><i class="fas fa-users"></i><span class="user-count-label">Total
+                            User Terdaftar</span></div>
+                    <div class="user-count-value">{{ $totalUsers }}</div>
                 </div>
-
-                <!-- Logo Card -->
                 <div class="logo-card">
-                    <div class="logo-text">SiLaras!</div>
+                    <div class="logo">
+                        <img src="{{ asset('images/logo-silaras.png') }}" alt="SiLaras Logo">
+                    </div>
+                </div>
+                <div class="quick-actions">
+                    <h3><i class="fas fa-bolt"></i> Akses Cepat</h3>
+                    <div class="actions-grid">
+                        <button class="action-btn" onclick="location.href='/admin/report-ad'">
+                            <i class="fas fa-file-alt"></i><span>Reports</span>
+                            <i class="fas fa-chevron-right arrow"></i></button>
+                        <button class="action-btn" onclick="location.href='/admin/riwayat-ad'">
+                            <i class="fas fa-history"></i><span>History</span>
+                            <i class="fas fa-chevron-right arrow"></i></button>
+                        <button class="action-btn" onclick="location.href='/admin/user-ad'">
+                            <i class="fas fa-users"></i><span>Users</span>
+                            <i class="fas fa-chevron-right arrow"></i></button>
+                    </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="monthly-chart-section">
+            <div class="chart-header">
+                <div class="chart-title"><i class="fas fa-chart-line"></i><span>Ringkasan Laporan Per Bulan</span>
+                </div>
+                <div class="chart-controls">
+                    <select class="chart-select" id="chartYear">
+                        <option value="2026" selected>2026</option>
+                        <option value="2025">2025</option>
+                    </select>
+                    <select class="chart-select" id="chartType">
+                        <option value="bar">Bar Chart</option>
+                        <option value="line">Line Chart</option>
+                        <option value="area">Area Chart</option>
+                    </select>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="monthlyReportChart"></canvas>
+            </div>
+            <div class="chart-stats-grid">
+                <div class="chart-stat-item">
+                    <div class="chart-stat-label">Bulan Ini</div>
+                    <div class="chart-stat-value">{{ $currentMonthTotal }}</div>
+                </div>
+                <div class="chart-stat-item">
+                    <div class="chart-stat-label">Rata-rata</div>
+                    <div class="chart-stat-value">{{ $averagePerMonth }}</div>
+                </div>
+                <div class="chart-stat-item">
+                    <div class="chart-stat-label">Bulan Tertinggi</div>
+                    <div class="chart-stat-value">{{ $highestMonth }}</div>
+                </div>
+                <div class="chart-stat-item">
+                    <div class="chart-stat-label">Total Tahun Ini</div>
+                    <div class="chart-stat-value">{{ $yearlyTotal }}</div>
+                </div>
+            </div>
+            <select class="chart-select" id="chartMonth">
+                <option value="1">Jan</option>
+                <option value="2">Feb</option>
+                <option value="3">Mar</option>
+                <option value="4">Apr</option>
+                <option value="5">Mei</option>
+                <option value="6">Jun</option>
+                <option value="7">Jul</option>
+                <option value="8">Agu</option>
+                <option value="9">Sep</option>
+                <option value="10">Okt</option>
+                <option value="11">Nov</option>
+                <option value="12">Des</option>
+            </select>
+
+            <button onclick="downloadPDF()" class="download-btn">
+                <i class="fas fa-download"></i>
+                <span>PDF</span>
+            </button>
         </div>
     </main>
 
     <script>
-        // Toggle sidebar for mobile
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
+        let monthlyChart;
+        const monthlyData = @json($monthlyReports);
+
+        function initChart() {
+            const ctx = document.getElementById('monthlyReportChart').getContext('2d');
+            const months = monthlyData.map(item => item.month);
+            const pending = monthlyData.map(item => item.pending);
+            const diproses = monthlyData.map(item => item.diproses);
+            const selesai = monthlyData.map(item => item.selesai);
+            const ditolak = monthlyData.map(item => item.ditolak);
+
+            monthlyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [{
+                            label: 'Pending',
+                            data: pending,
+                            backgroundColor: 'rgba(245, 158, 11, 0.65)',
+                            borderColor: '#f59e0b',
+                            borderWidth: 1.5,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Diproses',
+                            data: diproses,
+                            backgroundColor: 'rgba(59, 130, 246, 0.65)',
+                            borderColor: '#3b82f6',
+                            borderWidth: 1.5,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Selesai',
+                            data: selesai,
+                            backgroundColor: 'rgba(16, 185, 129, 0.65)',
+                            borderColor: '#10b981',
+                            borderWidth: 1.5,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Ditolak',
+                            data: ditolak,
+                            backgroundColor: 'rgba(239, 68, 68, 0.65)',
+                            borderColor: '#ef4444',
+                            borderWidth: 1.5,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
 
-        // logout function
-       function openLogoutModal() {
-    document.getElementById('logoutModal').style.display = 'flex';
-}
+        function updateChartType() {
+            if (!monthlyChart) return;
+            const type = document.getElementById('chartType').value;
+            let chartType = type === 'area' ? 'line' : type;
+            monthlyChart.config.type = chartType;
+            if (type === 'area') {
+                monthlyChart.data.datasets.forEach(ds => ds.fill = true);
+            } else {
+                monthlyChart.data.datasets.forEach(ds => ds.fill = false);
+            }
+            monthlyChart.update();
+        }
 
-function closeLogoutModal() {
-    document.getElementById('logoutModal').style.display = 'none';
-}
+        function downloadPDF() {
+            const year = document.getElementById('chartYear').value;
+            const month = document.getElementById('chartMonth').value;
 
-function confirmLogout() {
-    document.getElementById('logoutForm').submit();
-}
+            window.location.href = `/admin/admin/pdf-dash-report?month=${month}&year=${year}`;
+        }
 
+        // Mobile & utilities
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
 
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('keyup', function() {
-            const searchValue = this.value.toLowerCase();
-            const tableRows = document.querySelectorAll('#reportsTableBody tr');
+        function openLogoutModal() {
+            document.getElementById('logoutModal').classList.add('active');
+        }
 
-            tableRows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                if (text.includes(searchValue)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        });
+        function closeLogoutModal() {
+            document.getElementById('logoutModal').classList.remove('active');
+        }
 
-        // Menu navigation
-        document.querySelectorAll('.menu-item').forEach(item => {
-            item.addEventListener('click', function() {
-                // Remove active class from all items
-                document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-                // Add active class to clicked item
-                this.classList.add('active');
-                
-                const menuText = this.textContent.trim();
-                document.querySelector('.header h1').textContent = menuText;
+        function confirmLogout() {
+            document.getElementById('logoutForm').submit();
+        }
 
-                // Close sidebar on mobile after selection
-                if (window.innerWidth <= 968) {
-                    toggleSidebar();
-                }
-            });
-        });
+        function viewReportDetail(id) {
+            window.location.href = '/admin/report-ad';
+        }
 
-        // Click table row to view details
-        document.querySelectorAll('#reportsTableBody tr').forEach(row => {
-            row.style.cursor = 'pointer';
-            row.addEventListener('click', function() {
-                const laporan = this.cells[1].textContent;
-                alert(`Membuka detail ${laporan}`);
-                // Nanti redirect ke halaman detail
+        document.addEventListener('DOMContentLoaded', function() {
+            initChart();
+            document.getElementById('chartType').addEventListener('change', updateChartType);
+
+            // Search filter
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keyup', function() {
+                    const val = this.value.toLowerCase();
+                    document.querySelectorAll('#reportsTableBody tr').forEach(row => {
+                        row.style.display = row.innerText.toLowerCase().includes(val) ? '' : 'none';
+                    });
+                });
+            }
+
+            // Close sidebar on mobile after menu click
+            document.querySelectorAll('.menu-item').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 968) toggleSidebar();
+                });
             });
         });
     </script>
 </body>
+
 </html>

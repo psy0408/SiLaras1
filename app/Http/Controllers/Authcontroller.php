@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class AuthController extends Controller
 {
@@ -18,27 +19,61 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'nisn' => 'required',
+            'username' => 'required',
             'password' => 'required',
         ]);
 
-        $credentials = $request->only('email', 'nisn', 'password');
+        // Cek limit di awal (ambil data session)
+        $attempts = $request->session()->get('login_attempts', 0);
+
+        if ($attempts >= 3) {
+            return back()->withErrors([
+                'lockout' => 'Anda telah salah memasukkan data sebanyak 3 kali. Silakan hubungi admin.'
+            ])
+                ->with('show_forgot_password', true)
+                ->with('login_attempts', $attempts)
+                ->withInput($request->only('email', 'username'));
+        }
+
+        $credentials = $request->only('email', 'username', 'password');
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+            $request->session()->forget('login_attempts');
 
-            // arahkan sesuai role
-            if (auth()->user()->isAdmin()) {
-                return redirect()->route('admin.admin');
-            }
+            /** @var User $user */
+            $user = auth()->user();
 
-            return redirect()->route('home');
+            return $user->isAdmin() ? redirect()->route('admin.admin') : redirect('home');
         }
 
-        return back()->withErrors([
-            'email' => 'Email / NISN / Password salah',
-        ]);
+        // JIKA GAGAL: Tambah hitungan menggunakan increment
+        $attempts++;
+        $request->session()->put('login_attempts', $attempts);
+
+        // PENTING: Paksa simpan session sebelum redirect back
+        $request->session()->save();
+
+        if ($attempts >= 3) {
+            return back()->withErrors([
+                'lockout' => 'Anda telah salah memasukkan data sebanyak 3 kali. Silakan hubungi admin.'
+            ])
+                ->with('show_forgot_password', true)
+                ->with('login_attempts', $attempts)
+                ->withInput($request->only('email', 'username'));
+        }
+
+        return back()
+            ->withErrors(['email' => 'Email / Username / Password salah'])
+            ->withInput($request->only('email', 'username'));
     }
+
+    // redirect ke contact admin
+    public function showContactAdmin()
+    {
+        return view('auth.contact-admin');
+    }
+
 
     // logout
     public function logout(Request $request)
