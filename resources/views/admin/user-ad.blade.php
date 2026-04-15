@@ -1541,8 +1541,8 @@
                             <i class="fas fa-edit"></i> Edit
                         </button>
                         ${u.profile_photo_url ? `<button class="btn-reset" onclick="openDeletePhotoModal(${u.id},'${escapeHtml(u.name)}','${u.profile_photo_url}')" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
-                                                <i class="fas fa-image"></i> Hapus Foto
-                                            </button>` : ''}
+                                                    <i class="fas fa-image"></i> Hapus Foto
+                                                </button>` : ''}
                         <button class="btn-reset" onclick="openResetModal(${u.id},'${escapeHtml(u.name)}')">
                             <i class="fas fa-key"></i> Reset
                         </button>
@@ -1646,6 +1646,7 @@
 
         const id = document.getElementById('editId').value;
         const body = {
+            name: document.getElementById('editName').value,
             email: document.getElementById('editEmail').value,
             username: document.getElementById('editUsername').value,
         };
@@ -1791,11 +1792,11 @@
         // Tampilkan preview foto
         const previewDiv = document.getElementById('photoPreviewDelete');
         previewDiv.innerHTML = `
-                    <img src="${photoUrl}" alt="Foto Profil">
-                    <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--gray-500);">
-                        <i class="fas fa-image"></i> Foto profil saat ini
-                    </div>
-                `;
+                        <img src="${photoUrl}" alt="Foto Profil">
+                        <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--gray-500);">
+                            <i class="fas fa-image"></i> Foto profil saat ini
+                        </div>
+                    `;
 
             openModal('deletePhotoModal');
         }

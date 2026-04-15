@@ -962,7 +962,7 @@
                 Memiliki pertanyaan, saran, atau mengalami kendala? Tim kami siap membantu Anda! Jangan ragu untuk menghubungi kami melalui:
             </p>
             <div class="contact-info">
-                <p><i class="fas fa-envelope"></i> <strong>Email:</strong> support@silaras.sch.id</p>
+                <p><i class="fas fa-envelope"></i> <strong>Email:</strong> smkn1cs@gmail.com</p>
                 <p><i class="fab fa-whatsapp"></i> <strong>WhatsApp:</strong> +62 812-3456-7890</p>
                 <p><i class="fas fa-map-marker-alt"></i> <strong>Alamat:</strong> Gedung Administrasi Sekolah, Ruang IT SMKN 1 Cisarua</p>
             </div>

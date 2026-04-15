@@ -107,9 +107,11 @@ class UserController extends Controller
 
         try {
             $validated = $request->validate([
+                'name' => ['required', 'string', 'max:100'],
                 'email' => ['required', 'email', 'unique:users,email,' . $id],
                 'username'  => ['required', 'string', 'unique:users,username,' . $id, 'min:5', 'max:20'],
             ], [
+                'name.required' => 'Nama wajib diisi.',
                 'email.required' => 'Email wajib diisi.',
                 'email.email'    => 'Format email tidak valid.',
                 'email.unique'   => 'Email ini sudah digunakan user lain.',

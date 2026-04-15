@@ -999,11 +999,8 @@
             <div class="chart-header">
                 <div class="chart-title"><i class="fas fa-chart-line"></i><span>Ringkasan Laporan Per Bulan</span>
                 </div>
+                <h3>Statistik Laporan Tahun <span id="currentYearText"></span></h3>
                 <div class="chart-controls">
-                    <select class="chart-select" id="chartYear">
-                        <option value="2026" selected>2026</option>
-                        <option value="2025">2025</option>
-                    </select>
                     <select class="chart-select" id="chartType">
                         <option value="bar">Bar Chart</option>
                         <option value="line">Line Chart</option>
@@ -1055,6 +1052,7 @@
     </main>
 
     <script>
+        const currentYear = new Date().getFullYear();
         let monthlyChart;
         const monthlyData = @json($monthlyReports);
 
@@ -1065,6 +1063,7 @@
             const diproses = monthlyData.map(item => item.diproses);
             const selesai = monthlyData.map(item => item.selesai);
             const ditolak = monthlyData.map(item => item.ditolak);
+            document.getElementById('currentYearText').textContent = currentYear;
 
             monthlyChart = new Chart(ctx, {
                 type: 'bar',
