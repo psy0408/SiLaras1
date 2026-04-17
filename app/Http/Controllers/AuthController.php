@@ -8,11 +8,13 @@ use App\Models\User;
 
 class AuthController extends Controller
 {
+
     // tampilkan halaman login
     public function showLogin()
     {
         return view('auth.login');
     }
+
 
     // proses login
     public function login(Request $request)
